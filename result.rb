@@ -2,36 +2,84 @@
 require 'octokit'
 require 'set'
 
-$client = Octokit::Client.new :login => "lewtds", :password => "1234567a"
-$my_set = Set.new
 
-users = gets.chomp
+class GithubGraphBuilder
+  def initialize(login, password, seed)
+    @seed = seed
+    @github = Octokit::Client.new :login => login, :password => password
+    @checked = Set.new
+    @graph = {}
+  end
 
+  def start
+    user = "lewtds"
 
-def query(users)
-  followers = $client.followers("#{users}")[0..2].map { |follower|
-    follower[:login]
-  }
+    process_user(user)
+    first_tier = @graph[user]
 
-  new_followers = followers.select { |follower| !$my_set.include? (follower) }
+    puts "FIRST_TIER"
+    second_tier = Set.new
+    first_tier.each { |user|
+      process_user user
+      second_tier.merge(@graph[user])
+    }
 
-  new_followers.each { |username|
+    second_tier = second_tier.difference @checked
 
-    puts 'I am running ' + username
+    puts "SECOND_TIER: #{second_tier.to_a}"
+    third_tier = Set.new
+    second_tier.each { |user|
+      process_user user
+      third_tier.merge(@graph[user])
+    }
 
-    $my_set.add(username)
+    third_tier = third_tier.difference @checked
 
-    user = $client.user username
+    puts "THIRD_TIER: #{third_tier.to_a}"
+    puts third_tier
+    puts @graph
+  end
 
-    if user.location and user.location.match("[Vv]iet")
-      puts username
-    end
+  def process_users(users)
+    users.each { |user|
+      process_user user
+    }
+  end
 
-  }
+  def process_user(user)
+    puts user
+    @graph[user] ||= Set.new
+    related_users = find_related(user).select { |user| vietnamese? user }
+    related_users.each { |related_user|
+      @graph[user].add(related_user.login)
+      @graph[related_user.login] ||= Set.new
+      @graph[related_user.login].add user
+    }
+    puts "    #{@graph[user].to_a}"
+  end
+
+  def find_related(user)
+    # Find all the followers from this user
+    followers = @github.followers("#{user}").map {|user| user.login}
+
+    # Only query users we haven't checked
+    followers.select { |login| !@checked.include? login }
+    @checked = @checked.union followers
+    followers.map { |login| @github.user login }
+  end
+
+  def vietnamese?(user)
+    user.location and user.location.match("[Vv]iet")
+  end
 end
 
-while 1 do
-  query("#{users}").each { |result|
-    query(result)
-  }
+
+if __FILE__ == $0
+  # You should generate a personal API token and use it as the username and
+  # leave the password blank.
+  #
+  # http://developer.github.com/v3/auth/#basic-authentication
+  # https://github.com/blog/1509-personal-api-tokens
+  builder = GithubGraphBuilder.new("username", "password", "lewtds")
+  builder.start
 end
