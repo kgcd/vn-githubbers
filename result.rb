@@ -7,38 +7,6 @@ $my_set = Set.new
 
 users = gets.chomp
 
-def vietnamese_name? name
-  name.downcase.match /
-    nguyen|
-    tran|
-    pham|
-    huynh|
-    hoang|
-    phan|
-    quan|
-    duong|
-    vn|
-    tuan|
-    huy|
-    thanh|
-    linh|
-    tuan|
-    khanh|
-    thien|
-    hieu|
-    xuan|
-    binh|
-    duy|
-    giang|
-    nhung|
-    ngoc|
-    thuy|
-    ngan|
-    hang|
-    uyen|
-    yen/x != nil
-end
-
 
 def query(users)
   followers = $client.followers("#{users}")[0..2].map { |follower|
