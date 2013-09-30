@@ -44,12 +44,6 @@ class GithubGraphBuilder
     puts @graph
   end
 
-  def process_users(users)
-    users.each { |user|
-      process_user user
-    }
-  end
-
   def process_user(user)
     @graph[user] ||= Set.new
     related_users = find_related(user).select { |user| vietnamese? user }
