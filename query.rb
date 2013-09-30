@@ -1,11 +1,20 @@
 require 'octokit'
 
-client = Octokit::Client.new :login => "lewtds", :password => "1234567a"
-followers = client.followers('lewtds').map { |follower|
-    follower[:login]
-}
+$client = Octokit::Client.new :login => "lewtds", :password => "1234567a"
 
-followers.each { |username|
-    user = client.user username
-    puts user.location
-}
+def get_connections(user)
+    followers = $client.followers('lewtds').map { |follower|
+        follower[:login]
+    }
+
+    connected_users = []
+    followers.map { |username|
+        location = $client.user(username).location
+        if location and location.match(/[vV]iet/) ? username : nil
+            connected_users.push(username)
+        end
+    }
+    connected_users
+end
+
+puts get_connections("lewtds")
