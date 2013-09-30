@@ -12,15 +12,17 @@ class GithubGraphBuilder
   end
 
   def start
-    user = "lewtds"
+    puts @seed
+    process_user(@seed)
+    puts "    #{@graph[user].to_a}"
+    first_tier = @graph[@seed]
 
-    process_user(user)
-    first_tier = @graph[user]
-
-    puts "FIRST_TIER"
+    puts "FIRST_TIER: #{first_tier.to_a}"
     second_tier = Set.new
     first_tier.each { |user|
+      puts user
       process_user user
+      puts "    #{@graph[user].to_a}"
       second_tier.merge(@graph[user])
     }
 
@@ -29,7 +31,9 @@ class GithubGraphBuilder
     puts "SECOND_TIER: #{second_tier.to_a}"
     third_tier = Set.new
     second_tier.each { |user|
+      puts user
       process_user user
+      puts "    #{@graph[user].to_a}"
       third_tier.merge(@graph[user])
     }
 
@@ -47,7 +51,6 @@ class GithubGraphBuilder
   end
 
   def process_user(user)
-    puts user
     @graph[user] ||= Set.new
     related_users = find_related(user).select { |user| vietnamese? user }
     related_users.each { |related_user|
@@ -55,7 +58,7 @@ class GithubGraphBuilder
       @graph[related_user.login] ||= Set.new
       @graph[related_user.login].add user
     }
-    puts "    #{@graph[user].to_a}"
+
   end
 
   def find_related(user)
