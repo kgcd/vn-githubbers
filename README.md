@@ -1,7 +1,7 @@
 # VN Githubbers
 
 
-VN Githubber là một dự án nhỏ do của
+**vn-githubber** là một dự án nhỏ do của
 [Không gian cộng đồng](http://khonggiancongdong.org/) (KGCĐ), được tạo ra nhằm
 thu thập và xây dựng biểu đồ quan hệ người dùng Github Việt Nam.
 
